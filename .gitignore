@@ -1,4 +1,11 @@
-venv
-/data
-yolov8n.pt
+venv/
+/data/
+*.pt
+*.onnx
+__pycache__/
+*.pyc
+.env
 runs/
+results/
+monitoring/reports/
+monitoring/ood_scores.json

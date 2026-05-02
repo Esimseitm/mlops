@@ -1,0 +1,18 @@
+# Baseline обучение — только дневные чёткие сцены
+path: ../data/clear
+
+train: train/images
+val: val/images
+
+nc: 10
+names:
+  0: car
+  1: truck
+  2: bus
+  3: person
+  4: rider
+  5: traffic light
+  6: traffic sign
+  7: motor
+  8: bike
+  9: train

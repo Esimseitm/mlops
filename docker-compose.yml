@@ -22,6 +22,7 @@ services:
       /bin/sh -c "
       until (/usr/bin/mc alias set local http://minio:9000 admin password123) do echo 'Waiting for MinIO...' && sleep 1; done;
       /usr/bin/mc mb --ignore-existing local/mlflow;
+      /usr/bin/mc mb --ignore-existing local/dvc-storage;
       exit 0;
       "
 
