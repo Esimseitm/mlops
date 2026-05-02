@@ -8,6 +8,7 @@ os.environ['MLFLOW_TRACKING_URI'] = "http://localhost:5000"
 os.environ['AWS_ACCESS_KEY_ID'] = "admin"
 os.environ['AWS_SECRET_ACCESS_KEY'] = "password123" 
 os.environ['MLFLOW_S3_ENDPOINT_URL'] = "http://localhost:9000" 
+os.environ['MLFLOW_S3_IGNORE_TLS'] = "true" # Так как у нас локальный http
 # ---
 
 os.environ['MLFLOW_EXPERIMENT_NAME'] = "First test"
@@ -28,7 +29,7 @@ def run_train():
         batch=16,                  # Размер группы изображений
         project="road_detection",  # Папка для локальных сохранений
         name="mvp_run_coco8",      # Название заезда в MLflow
-        device="cpu"               # Для теста на WSL лучше оставить cpu
+        device="gpu"               # Для теста на WSL лучше оставить cpu
     )
 
     print("--- Обучение завершено. Проверяй MLflow UI! ---")
