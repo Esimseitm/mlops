@@ -4,9 +4,9 @@
   - data/clear/train+val/  — дневные чёткие сцены (80/20 split)
   - data/ood/val/          — ночные/дождливые сцены (только тест, не обучаем)
 
-Ожидает что файлы уже скачаны вручную:
-  data/raw/bdd100k_labels_images_val.json
-  data/raw/bdd100k_images_100k/val/*.jpg
+Ожидает структуру скачанного датасета:
+  bdd100k/bdd100k/images/100k/val/*.jpg
+  bdd100k_labels_release/bdd100k/labels/bdd100k_labels_images_val.json
 
 Запуск: python scripts/prepare_bdd100k.py
 """
@@ -20,6 +20,10 @@ from tqdm import tqdm
 
 DATA_DIR = Path("data")
 RAW_DIR = DATA_DIR / "raw"
+
+# Реальные пути к скачанному датасету
+BDD_IMAGES_DIR = Path("bdd100k/bdd100k/images/100k/val")
+BDD_LABELS_FILE = Path("bdd100k_labels_release/bdd100k/labels/bdd100k_labels_images_val.json")
 
 BDD_CLASSES = {
     "car": 0,
@@ -133,16 +137,15 @@ def process_ood(annotations: list, images_src: Path):
 
 
 def main():
-    labels_file = RAW_DIR / "bdd100k_labels_images_val.json"
-    images_dir = RAW_DIR / "bdd100k_images_100k" / "val"
+    labels_file = BDD_LABELS_FILE
+    images_dir = BDD_IMAGES_DIR
 
     if not labels_file.exists():
         print("ERROR: Файл меток не найден:", labels_file)
         print()
-        print("Скачай BDD100K вручную с https://bdd-data.berkeley.edu/")
-        print("Нужны два файла:")
-        print("  1. bdd100k_labels_images_val.json  → data/raw/")
-        print("  2. bdd100k_images_100k.zip → распакуй в data/raw/bdd100k_images_100k/")
+        print("Ожидается структура:")
+        print("  bdd100k_labels_release/bdd100k/labels/bdd100k_labels_images_val.json")
+        print("  bdd100k/bdd100k/images/100k/val/*.jpg")
         return
 
     if not images_dir.exists():
