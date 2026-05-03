@@ -1,5 +1,5 @@
 # OOD тест — ночь/дождь/туман, только для inference (симуляция деградации)
-path: ../data/ood
+path: data/ood
 
 train: val/images
 val: val/images

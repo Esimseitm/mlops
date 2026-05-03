@@ -1,5 +1,5 @@
 # Baseline обучение — только дневные чёткие сцены
-path: ../data/clear
+path: data/clear
 
 train: train/images
 val: val/images
