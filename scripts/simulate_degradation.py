@@ -91,8 +91,13 @@ def main(run_id: str):
                     mlflow.log_metric(f"ood_AP50_{CLASS_NAMES[i]}", float(ap))
 
         # Сравниваем с baseline
+        # YOLOv8 autolog пишет "metrics/mAP50(B)", наш скрипт пишет "mAP50"
         baseline_run = mlflow.get_run(run_id)
-        baseline_map = baseline_run.data.metrics.get("mAP50", 0)
+        baseline_map = (
+            baseline_run.data.metrics.get("mAP50")
+            or baseline_run.data.metrics.get("metrics/mAP50(B)")
+            or 0
+        )
         ood_map = metrics["mAP50_ood"]
         drop_abs = baseline_map - ood_map
         drop_pct = (drop_abs / baseline_map * 100) if baseline_map > 0 else 0

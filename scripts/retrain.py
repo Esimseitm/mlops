@@ -93,7 +93,11 @@ def main(baseline_run_id: str):
 
         # Сравниваем всё
         baseline_run = mlflow.get_run(baseline_run_id)
-        baseline_map = baseline_run.data.metrics.get("mAP50", 0)
+        baseline_map = (
+            baseline_run.data.metrics.get("mAP50")
+            or baseline_run.data.metrics.get("metrics/mAP50(B)")
+            or 0
+        )
         retrain_map = metrics["mAP50_retrain"]
         retrain_ood_map = ood_metrics["mAP50_retrain_on_ood"]
 
