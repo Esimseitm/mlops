@@ -16,8 +16,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import mlflow
 import pandas as pd
-from evidently.metrics import ColumnDriftMetric, DatasetDriftMetric
 from evidently.report import Report
+from evidently.presets import DataDriftPreset
 
 from configs.env import EXPERIMENT_NAME, setup_mlflow
 
@@ -29,10 +29,8 @@ SCORES_FILE = Path("monitoring/ood_scores.json")
 
 def load_scores(scores_file: Path) -> tuple[pd.DataFrame, pd.DataFrame, str, str]:
     data = json.loads(scores_file.read_text())
-
     ref_df = pd.DataFrame(data["baseline_data"])
     cur_df = pd.DataFrame(data["ood_data"])
-
     return ref_df, cur_df, data["baseline_run_id"], data["ood_run_id"]
 
 
@@ -49,28 +47,17 @@ def main(scores_file: Path):
     print(f"Reference (baseline): {len(ref_df)} images")
     print(f"Current (OOD):        {len(cur_df)} images")
 
-    report = Report(metrics=[
-        ColumnDriftMetric(column_name="avg_confidence"),
-        ColumnDriftMetric(column_name="num_detections"),
-        DatasetDriftMetric(),
-    ])
+    report = Report([DataDriftPreset()])
     report.run(reference_data=ref_df, current_data=cur_df)
 
     report_path = REPORT_DIR / "degradation_report.html"
     report.save_html(str(report_path))
     print(f"\nОтчёт сохранён: {report_path}")
 
-    # JSON-результат для встраивания в статью
-    report_dict = report.as_dict()
-    json_path = REPORT_DIR / "degradation_report.json"
-    json_path.write_text(json.dumps(report_dict, indent=2, default=str))
-    print(f"JSON:  {json_path}")
-
     # Логируем в MLflow
     mlflow.set_experiment(EXPERIMENT_NAME)
     with mlflow.start_run(run_name="evidently_drift_report"):
         mlflow.log_artifact(str(report_path), artifact_path="evidently")
-        mlflow.log_artifact(str(json_path), artifact_path="evidently")
         mlflow.log_param("baseline_run_id", baseline_run_id)
         mlflow.log_param("ood_run_id", ood_run_id)
         mlflow.set_tag("stage", "monitoring")
