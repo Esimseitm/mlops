@@ -77,7 +77,7 @@ def main(scores_file: Path):
 
         bm = mlflow.get_run(baseline_run_id).data.metrics
         om = mlflow.get_run(ood_run_id).data.metrics
-        mlflow.log_metric("mAP50_baseline", bm.get("mAP50", 0))
+        mlflow.log_metric("mAP50_baseline", bm.get("mAP50") or bm.get("metrics/mAP50B", 0))
         mlflow.log_metric("mAP50_ood", om.get("mAP50_ood", 0))
         mlflow.log_metric("mAP50_drop_pct", om.get("mAP50_drop_percent", 0))
 

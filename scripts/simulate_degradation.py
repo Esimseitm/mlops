@@ -76,11 +76,12 @@ def main(run_id: str):
 
         val_results = model.val(data=OOD_CONFIG, device=0, imgsz=640, batch=8)
 
+        vd = val_results.results_dict
         metrics = {
-            "mAP50_ood":     val_results.results_dict.get("metrics/mAP50(B)", 0),
-            "mAP50_95_ood":  val_results.results_dict.get("metrics/mAP50-95(B)", 0),
-            "precision_ood": val_results.results_dict.get("metrics/precision(B)", 0),
-            "recall_ood":    val_results.results_dict.get("metrics/recall(B)", 0),
+            "mAP50_ood":     vd.get("metrics/mAP50(B)") or vd.get("metrics/mAP50B", 0),
+            "mAP50_95_ood":  vd.get("metrics/mAP50-95(B)") or vd.get("metrics/mAP50-95B", 0),
+            "precision_ood": vd.get("metrics/precision(B)") or vd.get("metrics/precisionB", 0),
+            "recall_ood":    vd.get("metrics/recall(B)") or vd.get("metrics/recallB", 0),
         }
         mlflow.log_metrics(metrics)
 

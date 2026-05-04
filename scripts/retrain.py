@@ -64,11 +64,12 @@ def main(baseline_run_id: str):
         model = YOLO(str(weights_path))
         results = model.train(**TRAIN_PARAMS)
 
+        rd = results.results_dict
         metrics = {
-            "mAP50_retrain":     results.results_dict.get("metrics/mAP50(B)", 0),
-            "mAP50_95_retrain":  results.results_dict.get("metrics/mAP50-95(B)", 0),
-            "precision_retrain": results.results_dict.get("metrics/precision(B)", 0),
-            "recall_retrain":    results.results_dict.get("metrics/recall(B)", 0),
+            "mAP50_retrain":     rd.get("metrics/mAP50(B)") or rd.get("metrics/mAP50B", 0),
+            "mAP50_95_retrain":  rd.get("metrics/mAP50-95(B)") or rd.get("metrics/mAP50-95B", 0),
+            "precision_retrain": rd.get("metrics/precision(B)") or rd.get("metrics/precisionB", 0),
+            "recall_retrain":    rd.get("metrics/recall(B)") or rd.get("metrics/recallB", 0),
         }
         mlflow.log_metrics(metrics)
 
@@ -80,14 +81,15 @@ def main(baseline_run_id: str):
 
         # Повторная валидация на OOD — доказываем восстановление
         print("\nВалидация retrained модели на OOD данных...")
-        best_weights = Path(f"runs/train/{RUN_NAME}/weights/best.pt")
+        best_weights = Path(results.save_dir) / "weights" / "best.pt"
         retrained_model = YOLO(str(best_weights))
         ood_results = retrained_model.val(data=OOD_CONFIG, device=0, imgsz=640, batch=8)
 
+        od = ood_results.results_dict
         ood_metrics = {
-            "mAP50_retrain_on_ood":     ood_results.results_dict.get("metrics/mAP50(B)", 0),
-            "precision_retrain_on_ood": ood_results.results_dict.get("metrics/precision(B)", 0),
-            "recall_retrain_on_ood":    ood_results.results_dict.get("metrics/recall(B)", 0),
+            "mAP50_retrain_on_ood":     od.get("metrics/mAP50(B)") or od.get("metrics/mAP50B", 0),
+            "precision_retrain_on_ood": od.get("metrics/precision(B)") or od.get("metrics/precisionB", 0),
+            "recall_retrain_on_ood":    od.get("metrics/recall(B)") or od.get("metrics/recallB", 0),
         }
         mlflow.log_metrics(ood_metrics)
 

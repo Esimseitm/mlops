@@ -58,11 +58,12 @@ def main():
         model = YOLO("yolov8n.pt")
         results = model.train(**TRAIN_PARAMS)
 
+        rd = results.results_dict
         metrics = {
-            "mAP50":     results.results_dict.get("metrics/mAP50(B)", 0),
-            "mAP50_95":  results.results_dict.get("metrics/mAP50-95(B)", 0),
-            "precision": results.results_dict.get("metrics/precision(B)", 0),
-            "recall":    results.results_dict.get("metrics/recall(B)", 0),
+            "mAP50":     rd.get("metrics/mAP50(B)") or rd.get("metrics/mAP50B", 0),
+            "mAP50_95":  rd.get("metrics/mAP50-95(B)") or rd.get("metrics/mAP50-95B", 0),
+            "precision": rd.get("metrics/precision(B)") or rd.get("metrics/precisionB", 0),
+            "recall":    rd.get("metrics/recall(B)") or rd.get("metrics/recallB", 0),
         }
         mlflow.log_metrics(metrics)
 
