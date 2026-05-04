@@ -2,9 +2,7 @@
 Evidently AI отчёт: сравнивает per-image confidence и detection count
 между baseline и OOD данными. Генерирует HTML-отчёт + логирует в MLflow.
 
-Запуск:
-  python monitoring/evidently_report.py
-  python monitoring/evidently_report.py --scores_file monitoring/ood_scores.json
+Запуск: python monitoring/evidently_report.py
 """
 
 import argparse
@@ -16,7 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import mlflow
 import pandas as pd
-from evidently.report import Report
+from evidently import Report
 from evidently.presets import DataDriftPreset
 
 from configs.env import EXPERIMENT_NAME, setup_mlflow
@@ -27,7 +25,7 @@ REPORT_DIR = Path("monitoring/reports")
 SCORES_FILE = Path("monitoring/ood_scores.json")
 
 
-def load_scores(scores_file: Path) -> tuple[pd.DataFrame, pd.DataFrame, str, str]:
+def load_scores(scores_file: Path):
     data = json.loads(scores_file.read_text())
     ref_df = pd.DataFrame(data["baseline_data"])
     cur_df = pd.DataFrame(data["ood_data"])
@@ -43,15 +41,14 @@ def main(scores_file: Path):
         return
 
     ref_df, cur_df, baseline_run_id, ood_run_id = load_scores(scores_file)
-
     print(f"Reference (baseline): {len(ref_df)} images")
     print(f"Current (OOD):        {len(cur_df)} images")
 
     report = Report([DataDriftPreset()])
-    report.run(reference_data=ref_df, current_data=cur_df)
+    snapshot = report.run(reference_data=ref_df, current_data=cur_df)
 
     report_path = REPORT_DIR / "degradation_report.html"
-    report.save_html(str(report_path))
+    snapshot.save_html(str(report_path))
     print(f"\nОтчёт сохранён: {report_path}")
 
     # Логируем в MLflow
@@ -68,7 +65,7 @@ def main(scores_file: Path):
         mlflow.log_metric("mAP50_ood", om.get("mAP50_ood", 0))
         mlflow.log_metric("mAP50_drop_pct", om.get("mAP50_drop_percent", 0))
 
-        print("Отчёт загружен в MLflow artifacts")
+        print("Отчёт загружен в MLflow")
 
 
 if __name__ == "__main__":
