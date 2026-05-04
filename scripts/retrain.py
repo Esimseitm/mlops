@@ -95,6 +95,7 @@ def main(baseline_run_id: str):
         baseline_run = mlflow.get_run(baseline_run_id)
         baseline_map = (
             baseline_run.data.metrics.get("mAP50")
+            or baseline_run.data.metrics.get("metrics/mAP50B")
             or baseline_run.data.metrics.get("metrics/mAP50(B)")
             or 0
         )
