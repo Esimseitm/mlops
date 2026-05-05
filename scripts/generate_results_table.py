@@ -43,14 +43,21 @@ def main():
     # Таблица 1: Overall metrics comparison
     rows = []
 
+    def get_metric(run, *keys):
+        for k in keys:
+            v = run.data.metrics.get(k)
+            if v is not None:
+                return v
+        return "-"
+
     baseline = stages.get("baseline")
     if baseline:
         rows.append({
             "Stage": "Baseline (clear/daytime)",
-            "mAP@0.5": baseline.data.metrics.get("mAP50", "-"),
-            "mAP@0.5:0.95": baseline.data.metrics.get("mAP50_95", "-"),
-            "Precision": baseline.data.metrics.get("precision", "-"),
-            "Recall": baseline.data.metrics.get("recall", "-"),
+            "mAP@0.5":       get_metric(baseline, "mAP50", "metrics/mAP50B"),
+            "mAP@0.5:0.95":  get_metric(baseline, "mAP50_95", "metrics/mAP50-95B"),
+            "Precision":     get_metric(baseline, "precision", "metrics/precisionB"),
+            "Recall":        get_metric(baseline, "recall", "metrics/recallB"),
         })
 
     degradation = stages.get("degradation")
@@ -67,17 +74,17 @@ def main():
     if retrain:
         rows.append({
             "Stage": "Retrain (mixed data)",
-            "mAP@0.5": retrain.data.metrics.get("mAP50_retrain", "-"),
-            "mAP@0.5:0.95": retrain.data.metrics.get("mAP50_95_retrain", "-"),
-            "Precision": retrain.data.metrics.get("precision_retrain", "-"),
-            "Recall": retrain.data.metrics.get("recall_retrain", "-"),
+            "mAP@0.5":      get_metric(retrain, "mAP50_retrain", "metrics/mAP50B"),
+            "mAP@0.5:0.95": get_metric(retrain, "mAP50_95_retrain", "metrics/mAP50-95B"),
+            "Precision":    get_metric(retrain, "precision_retrain", "metrics/precisionB"),
+            "Recall":       get_metric(retrain, "recall_retrain", "metrics/recallB"),
         })
         rows.append({
             "Stage": "Retrain → OOD validation",
-            "mAP@0.5": retrain.data.metrics.get("mAP50_retrain_on_ood", "-"),
+            "mAP@0.5":      get_metric(retrain, "mAP50_retrain_on_ood"),
             "mAP@0.5:0.95": "-",
-            "Precision": retrain.data.metrics.get("precision_retrain_on_ood", "-"),
-            "Recall": retrain.data.metrics.get("recall_retrain_on_ood", "-"),
+            "Precision":    get_metric(retrain, "precision_retrain_on_ood"),
+            "Recall":       get_metric(retrain, "recall_retrain_on_ood"),
         })
 
     df = pd.DataFrame(rows)
